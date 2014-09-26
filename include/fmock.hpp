@@ -12,6 +12,7 @@
 #include <deque>
 #include <tuple>
 #include <typeinfo>
+#include <cassert>
 
 namespace fmock {
 namespace detail {
@@ -28,9 +29,9 @@ class expect_error : std::runtime_error {
   template <class visitor_type>
   void visit(visitor_type visit) const {
     for (auto error : next_errors) {
-      visit(error);
+      visit(error.what());
     }
-    visit(*this);
+    visit(this->what());
   }
  private:
   std::forward_list<expect_error> next_errors;
@@ -40,7 +41,7 @@ class expect_error : std::runtime_error {
 
 template <class constructed_type>
 struct constructor {
-  constructed_type operator() () const {
+  constructed_type operator() () const noexcept(constructed_type()) {
     return constructed_type();
   }
 }; // struct constructor
@@ -50,7 +51,7 @@ using matcher = std::function<bool (arg_type)>;
 
 template <class arg_type>
 struct any {
-  bool operator() (arg_type arg) const {
+  bool operator() (arg_type arg) const noexcept(true) {
     return true;
   }
 }; // struct any
@@ -96,7 +97,7 @@ class mock {
   mock(mock const&) = delete;
   mock(mock &&) = delete;
 
-  ~mock() {
+  ~mock() throw(detail::expect_error) {
     if (!has_unsatisfied_expectations()) {
       return;
     }
@@ -137,7 +138,7 @@ class mock {
     expectations.push_back(exp);
   }
 
-  bool has_unsatisfied_expectations() const {
+  bool has_unsatisfied_expectations() const noexcept(true) {
     return (expectations.size() != 0);
   }
  private:
@@ -185,13 +186,50 @@ class mock {
   }
 }; // class mock
 
+class shared_mock {
+ public:
+  shared_mock() = default;
+  shared_mock(shared_mock const& rhs) : ptr(rhs.ptr) {
+    ptr->count += 1;
+  }
+  shared_mock(shared_mock && rhs) : ptr(rhs.ptr) {
+    rhs.ptr = nullptr;
+  }
+
+  ~shared_mock() throw(expect_error) {
+    if (ptr && 0 == (ptr->count -= 1)) {
+      delete ptr;
+    }
+  }
+
+  mock* operator->() const noexcept(true) {
+    return get();
+  }
+  mock* get() const noexcept(true) {
+    return &ptr->impl;
+  }
+ private:
+  struct pointer {
+    size_t count = 1;
+    mock impl;
+
+    pointer() = default;
+    pointer(pointer const&) = delete;
+    pointer(pointer &&) = delete;
+  }; // struct pointer
+
+  pointer *ptr = new pointer;
+}; // class shared_mock
+
 template <class return_type, class ...arg_types>
 class answer_builder {
  public:
-  answer_builder(std::shared_ptr<detail::mock> mock)
+  answer_builder(detail::shared_mock mock)
     : impl(mock),
     matchers(detail::any<arg_types>()...),
     answer([] (arg_types...) { return detail::constructor<return_type>(); }) {
+
+    assert(impl.get());
   }
   ~answer_builder() {
     typedef detail::expectation<return_type, arg_types...> expectation_type;
@@ -200,26 +238,32 @@ class answer_builder {
     impl->add_expectation(std::make_tuple(typeinfo, exp));
   }
  private:
-  std::shared_ptr<detail::mock> impl;
+  detail::shared_mock impl;
   std::tuple<detail::matcher<arg_types>...> matchers;
   std::function<return_type(arg_types...)> answer;
+
 }; // class answer_builder
 
 }; // namespace detail
 
 class function {
  public:
+  function() = default;
+  function(function const& rhs) = default;
+  function(function&& rhs) : impl(std::move(rhs.impl)) {}
+  ~function() throw(detail::expect_error) {}
+
   template <class return_type, class ...arg_types>
   detail::answer_builder<return_type, arg_types...>
-  expect_call(detail::matcher<arg_types> const& ...matchers) {
+  expect_call(detail::matcher<arg_types> const& ...matchers) noexcept(true) {
     return detail::answer_builder<return_type, arg_types...>(impl);
   }
   template <class return_type, class ...arg_types>
-  return_type operator() (arg_types ...args) {
+  return_type operator() (arg_types ...args) noexcept(false) {
     return impl->call<return_type>(std::forward<arg_types>(args)...);
   }
  private:
-  std::shared_ptr<detail::mock> impl;
+  detail::shared_mock impl;
 }; // class function
 
 } // namespace fmock

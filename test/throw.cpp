@@ -11,7 +11,7 @@
 using namespace fmock;
 
 TEST(throw_exception, when_expected_nullary_call_not_satisfied) {
-  EXPECT_THROW({
+  ASSERT_THROW({
     function().expect_call<void>();
   }, detail::expect_error);
 }
