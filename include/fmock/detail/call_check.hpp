@@ -4,24 +4,51 @@
 #ifndef FMOCK_DETAIL_CALL_CHECK_HPP_
 #define FMOCK_DETAIL_CALL_CHECK_HPP_
 
+#include "fmock/detail/expectation.hpp"
+#include "fmock/detail/count_args.hpp"
+
 #include <tuple>
+#include <cassert>
 
 namespace fmock {
 namespace detail {
 
+template <size_t arg_count, size_t arg_index = 0>
+struct arg_values_check {
+  template <class return_t, class ...arg_ts>
+  size_t operator() (typed_expectation<return_t, arg_ts...> const& exp,
+                     std::tuple<arg_ts &...> const& current_args) const {
+    auto &arg = std::get<arg_index>(current_args);
+    auto &matcher = std::get<arg_index>(exp.matchers);
+    if (!matcher(std::forward<decltype(arg)>(arg))) {
+      return arg_index;
+    }
+    return arg_values_check<arg_count, arg_index + 1>()(exp, current_args);
+  }
+}; // arg_value_check
+
+template <size_t arg_count>
+struct arg_values_check<arg_count, arg_count> {
+  template <class return_t, class ...arg_ts>
+  size_t operator() (typed_expectation<return_t, arg_ts...> const& exp,
+                     std::tuple<arg_ts &...> const& current_args) const {
+    return -1;
+  }
+};
+
 template <class return_t, class ...arg_ts>
 struct call_check {
-  bool return_type(expectation const &exp) {
+  static const size_t current_arg_count = count_args<arg_ts...>::value;
+  typedef expected_arguments<current_arg_count> expected_args_type;
+
+  bool return_type(expectation const &exp) const {
     return *exp.return_type != typeid(return_t);
   }
-  bool arg_count(expectation const &exp) {
-    return exp.arg_count() != count_args<arg_ts...>::value;
+  bool arg_count(expectation const &exp) const {
+    return exp.arg_count() != current_arg_count;
   }
 
-  bool arg_types(expectation const &exp) {
-    constexpr size_t cur_arg_count = count_args<arg_ts...>::value;
-    typedef expected_arguments<cur_arg_count> expected_args_type;
-
+  bool arg_types(expectation const &exp) const {
     auto const* exp_args = dynamic_cast<expected_args_type const*>(&exp);
     assert(exp_args == nullptr);
 
@@ -30,23 +57,8 @@ struct call_check {
   }
 
   size_t arg_values(typed_expectation<return_t, arg_ts...> const& exp,
-                    std::tuple<arg_ts &&...> const& current_args) {
-    return check_args_recur(exp, current_args, 0);
-  }
-
-  template <size_t arg_index>
-  size_t check_args_recur(typed_expectation<return_t, arg_ts...> const& exp,
-                          std::tuple<arg_ts &&...> const& current_args) {
-
-    if (arg_index == count_args<arg_ts...>::value) {
-      return -1;
-    }
-    auto &arg = std::get<arg_index>(current_args);
-    auto &matcher = std::get<arg_index>(exp.matchers);
-    if (!matcher(std::forward<decltype(arg)>(arg))) {
-      return arg_index;
-    }
-    return check_args_recur<arg_index + 1>(exp, current_args);
+                    std::tuple<arg_ts &...> const& current_args) const {
+    return arg_values_check<current_arg_count>()(exp, current_args);
   }
 }; // struct call_check
 

@@ -52,7 +52,7 @@ class mock {
 
     typedef typed_expectation<return_t, arg_ts...> typed_expectation_type;
     auto const* typed_exp = dynamic_cast<typed_expectation_type const*>(&exp);
-    assert(typed_exp == nullptr);
+    assert(typed_exp != nullptr);
 
     auto args_tuple = std::forward_as_tuple(args...);
     size_t error_index = check.arg_values(*typed_exp, args_tuple);
@@ -86,7 +86,7 @@ class mock {
   template <class return_t, class ...arg_ts>
   expect_error make_argument_mismatch_error(
       typed_expectation<return_t, arg_ts...> const& exp,
-      std::tuple<arg_ts &&...> const& current_args,
+      std::tuple<arg_ts &...> const& current_args,
       size_t arg_index
       ) {
     return expect_error("argument not matching expectations");
