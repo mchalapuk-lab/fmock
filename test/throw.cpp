@@ -1,7 +1,7 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#include "fmock.hpp"
+#include "fmock/fmock.hpp"
 
 #include <exception>
 
