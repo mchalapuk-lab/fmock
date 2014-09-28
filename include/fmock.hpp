@@ -49,6 +49,8 @@ struct constructor {
 template <class arg_type>
 using matcher = std::function<bool (arg_type)>;
 
+namespace matchers {
+
 template <class arg_type>
 struct any {
   bool operator() (arg_type arg) const noexcept(true) {
@@ -56,43 +58,153 @@ struct any {
   }
 }; // struct any
 
-template <class return_type, class ...arg_types>
-struct expectation {
-  std::tuple<matcher<arg_types>...> matchers;
-  std::function<return_type(arg_types...)> answer;
-}; // struct expectation
+} // namespace matchers
 
+template <size_t list_size>
+struct type_info_tuple : type_info_tuple<list_size - 1> {
+  template <class tuple_type>
+  struct enlarge_tuple;
+
+  typedef typename type_info_tuple<list_size - 1>::type super_tuple;
+  typedef typename enlarge_tuple<super_tuple>::type type;
+}; // struct type_info_tuple
+
+template <size_t list_size>
 template <class ...arg_types>
-struct typeinfo_list_creator {
-}; // struct typeinfo_list_creator
+struct type_info_tuple<list_size>::enlarge_tuple<std::tuple<arg_types...>> {
+  typedef std::tuple<arg_types..., std::type_info *> type;
+};
 
 template <>
-struct typeinfo_list_creator<> {
-  std::list<std::type_info const*>
-  operator() (std::list<std::type_info const*> list) const {
-    return list;
-  }
+struct type_info_tuple<0> {
+  typedef std::tuple<> type;
 };
+
+template <class ...arg_types>
+struct count_args {
+}; // struct count_args
 
 template <class head_type, class ...tail_types>
-struct typeinfo_list_creator<head_type, tail_types...> {
-  std::list<std::type_info const*>
-  operator() (std::list<std::type_info const*> list) const {
-    list.push_back(&typeid(head_type));
-    return typeinfo_list_creator<tail_types...>()(list);
-  }
+struct count_args<head_type, tail_types...> {
+  static size_t const value = 1 + count_args<tail_types...>::value;
 };
 
-template <class ...types>
-std::list<std::type_info const*> make_typeinfo_list() {
-  return typeinfo_list_creator<types...>()(std::list<std::type_info const*>());
+template <>
+struct count_args<> {
+  static size_t const value = 0;
+};
+
+struct expectation {
+  std::type_info const* return_type;
+
+  expectation(std::type_info const* rt) : return_type(rt) {}
+  virtual size_t arg_count() const noexcept(true) = 0;
+}; // struct expectation
+
+template <size_t arg_count_static>
+struct expected_arguments : public expectation {
+  typedef typename type_info_tuple<arg_count_static>::type args_tuple_type;
+  args_tuple_type arg_type_infos;
+
+  expected_arguments(std::type_info const* return_type,
+                     args_tuple_type const& args) :
+    expectation(return_type),
+    arg_type_infos(args) {
+  }
+
+  size_t arg_count() const noexcept(true) {
+    return arg_count_static;
+  }
+}; // struct expected_arguments
+
+template <class return_t, class ...arg_ts>
+struct typed_expectation :
+  public expected_arguments<count_args<arg_ts...>::value> {
+
+  static size_t const arg_count_static = count_args<arg_ts...>::value;
+
+  typedef expected_arguments<arg_count_static> expected_args_type;
+  typedef std::tuple<matcher<arg_ts>...> matchers_tuple;
+  typedef std::function<return_t(arg_ts...)> answer_type;
+
+  matchers_tuple matchers;
+  answer_type answer;
+
+  typed_expectation(matchers_tuple const& m, answer_type const& a) :
+    expected_args_type(&typeid(return_t), std::make_tuple(&typeid(arg_ts)...)),
+    matchers(m),
+    answer(a) {
+  }
+}; // struct typed_expectation
+
+template <class return_t, class ...arg_ts>
+typed_expectation<return_t, arg_ts...> *make_typed_expectation(
+    typename typed_expectation<return_t, arg_ts...>::matchers_tuple const& m,
+    typename typed_expectation<return_t, arg_ts...>::answer_type const& a
+    ) {
+  return new typed_expectation<return_t, arg_ts...>(m, a);
 }
+
+template <class return_t, class ...arg_ts>
+struct call_check {
+  bool return_type(expectation const &exp) {
+    return *exp.return_type != typeid(return_t);
+  }
+  bool arg_count(expectation const &exp) {
+    return exp.arg_count() != count_args<arg_ts...>::value;
+  }
+
+  bool arg_types(expectation const &exp) {
+    constexpr size_t cur_arg_count = count_args<arg_ts...>::value;
+    typedef expected_arguments<cur_arg_count> expected_args_type;
+
+    auto const* exp_args = dynamic_cast<expected_args_type const*>(&exp);
+    assert(exp_args == nullptr);
+
+    auto cur_arg_types = std::make_tuple(&typeid(arg_ts)...);
+    return exp_args->arg_type_infos == cur_arg_types;
+  }
+
+  size_t arg_values(typed_expectation<return_t, arg_ts...> const& exp,
+                    std::tuple<arg_ts &&...> const& current_args) {
+    return check_args_recur(exp, current_args, 0);
+  }
+
+  template <size_t arg_index>
+  size_t check_args_recur(typed_expectation<return_t, arg_ts...> const& exp,
+                          std::tuple<arg_ts &&...> const& current_args) {
+
+    if (arg_index == count_args<arg_ts...>::value) {
+      return -1;
+    }
+    auto &arg = std::get<arg_index>(current_args);
+    auto &matcher = std::get<arg_index>(exp.matchers);
+    if (!matcher(std::forward<decltype(arg)>(arg))) {
+      return arg_index;
+    }
+    return check_args_recur<arg_index + 1>(exp, current_args);
+  }
+}; // struct call_check
+
+template <class return_t>
+struct call_check<return_t> {
+  bool return_type(expectation const &exp) {
+    return *exp.return_type != typeid(return_t);
+  }
+  bool arg_count(expectation const &exp) {
+    return exp.arg_count() != 0;
+  }
+  bool arg_types(expectation const &exp) {
+    return true;
+  }
+  size_t arg_values(typed_expectation<return_t> const& exp,
+                    std::tuple<> const& current_args) {
+    return -1;
+  }
+};
 
 class mock {
  public:
-  typedef std::list<std::type_info const*> typeinfo_list;
-  typedef std::tuple<typeinfo_list, std::shared_ptr<void>> exp_tuple;
-
   mock() {}
   mock(mock const&) = delete;
   mock(mock &&) = delete;
@@ -108,80 +220,64 @@ class mock {
     // error not thrown, can't do much about it (TODO stderr??)
   }
  
-  template <class return_type, class ...arg_types>
-  return_type call(arg_types ...args) {
-    auto current_arg_types = make_typeinfo_list<return_type, arg_types...>();
+  template <class return_t, class ...arg_ts>
+  return_t call(arg_ts ...args) {
     if (!has_unsatisfied_expectations()) {
-      throw make_unexpected_call_error(current_arg_types);
+      throw make_unexpected_call_error<return_t, arg_ts...>();
+    }
+    auto const& exp = *expectations.front();
+
+    call_check<return_t, arg_ts...> check;
+    if (!check.return_type(exp)) {
+      throw make_unexpected_call_error<return_t, arg_ts...>(exp);
+    }
+    if (!check.arg_count(exp)) {
+      throw make_unexpected_call_error<return_t, arg_ts...>(exp);
+    }
+    if (!check.arg_types(exp)) {
+      throw make_unexpected_call_error<return_t, arg_ts...>(exp);
     }
 
-    auto front = expectations.front();
+    typedef typed_expectation<return_t, arg_ts...> typed_expectation_type;
+    auto const* typed_exp = dynamic_cast<typed_expectation_type const*>(&exp);
+    assert(typed_exp == nullptr);
+
+    auto args_tuple = std::forward_as_tuple(args...);
+    size_t error_index = check.arg_values(*typed_exp, args_tuple);
+    if (error_index != -1) {
+      throw make_argument_mismatch_error(*typed_exp, args_tuple, error_index);
+    }
     expectations.pop_front();
-    typeinfo_list expected_arg_types;
-    std::shared_ptr<void> exp_ptr;
-    std::tie(expected_arg_types, exp_ptr) = front;
-
-    if (expected_arg_types != current_arg_types) {
-      throw make_unexpected_call_error(current_arg_types, expected_arg_types);
-    }
-
-    typedef expectation<return_type, arg_types...> expectations_type;
-    auto *typed_exp = static_cast<expectations_type *>(exp_ptr.get());
-    check_arguments(expected_arg_types,
-                    *typed_exp,
-                    std::forward<arg_types>(args)...,
-                    0);
-    return typed_exp->answer(std::forward<arg_types>(args)...);
+    return typed_exp->answer(std::forward<arg_ts>(args)...);
   }
 
-  void add_expectation(exp_tuple const& exp) {
-    expectations.push_back(exp);
+  void add_expectation(expectation *exp) {
+    expectations.emplace_back(exp);
   }
 
   bool has_unsatisfied_expectations() const noexcept(true) {
     return (expectations.size() != 0);
   }
  private:
-  std::deque<exp_tuple> expectations;
-
-  template <class return_type, class ...arg_types>
-  void check_arguments(typeinfo_list expected_arg_types,
-                       expectation<return_type, arg_types...> const& exp,
-                       arg_types... args,
-                       size_t arg_index) {
-
-    constexpr auto arg_count = std::tuple_size<decltype(exp.matchers)>::value;
-    if (arg_index == arg_count) {
-      return;
-    }
-
-    auto &arg = std::get<arg_index>(std::forward_as_tuple(args...));
-    auto &matcher = std::get<arg_index>(exp.matchers);
-    if (!matcher(std::forward<decltype(arg)>(arg))) {
-      throw make_argument_mismatch_error(expected_arg_types, arg_index);
-    }
-
-    check_arguments(expected_arg_types,
-                    exp,
-                    std::forward<arg_types>(args)...,
-                    arg_index + 1);
-  }
+  std::deque<std::unique_ptr<expectation>> expectations;
 
   expect_error make_unsatisfied_error() {
     return expect_error("unsatisfied expectations");
   }
-  static expect_error
-  make_unexpected_call_error(typeinfo_list current_arg_types) {
+  template <class return_t, class ...arg_ts>
+  expect_error make_unexpected_call_error() {
     return expect_error("unexpected call");
   }
-  static expect_error
-  make_unexpected_call_error(typeinfo_list current_arg_types,
-                             typeinfo_list expected_arg_types) {
-    return expect_error("unexpected call to different signature");
+  template <class return_t, class ...arg_ts>
+  expect_error make_unexpected_call_error(expectation const& exp) {
+    return expect_error("unexpected call");
   }
-  static expect_error
-  make_argument_mismatch_error(typeinfo_list expected_arg_types,
-                               size_t arg_index) {
+  template <class return_t, class ...arg_ts>
+  expect_error make_argument_mismatch_error(
+      typed_expectation<return_t, arg_ts...> const& exp,
+      std::tuple<arg_ts &&...> const& current_args,
+      size_t arg_index
+      ) {
     return expect_error("argument not matching expectations");
   }
 }; // class mock
@@ -195,7 +291,6 @@ class shared_mock {
   shared_mock(shared_mock && rhs) : ptr(rhs.ptr) {
     rhs.ptr = nullptr;
   }
-
   ~shared_mock() throw(expect_error) {
     if (ptr && 0 == (ptr->count -= 1)) {
       delete ptr;
@@ -224,24 +319,22 @@ class shared_mock {
 template <class return_type, class ...arg_types>
 class answer_builder {
  public:
-  answer_builder(detail::shared_mock mock)
-    : impl(mock),
-    matchers(detail::any<arg_types>()...),
+  answer_builder(detail::shared_mock mock) :
+    impl(mock),
+    matchers({ detail::matchers::any<arg_types>()... }),
     answer([] (arg_types...) { return detail::constructor<return_type>(); }) {
 
     assert(impl.get());
   }
   ~answer_builder() {
-    typedef detail::expectation<return_type, arg_types...> expectation_type;
-    std::shared_ptr<void> exp(new expectation_type { matchers, answer});
-    auto typeinfo = detail::make_typeinfo_list<return_type, arg_types...>();
-    impl->add_expectation(std::make_tuple(typeinfo, exp));
+    auto exp = detail::make_typed_expectation<return_type>(matchers, answer);
+    impl->add_expectation(exp);
   }
  private:
   detail::shared_mock impl;
+
   std::tuple<detail::matcher<arg_types>...> matchers;
   std::function<return_type(arg_types...)> answer;
-
 }; // class answer_builder
 
 }; // namespace detail
@@ -258,9 +351,10 @@ class function {
   expect_call(detail::matcher<arg_types> const& ...matchers) noexcept(true) {
     return detail::answer_builder<return_type, arg_types...>(impl);
   }
-  template <class return_type, class ...arg_types>
-  return_type operator() (arg_types ...args) noexcept(false) {
-    return impl->call<return_type>(std::forward<arg_types>(args)...);
+
+  template <class ...arg_types>
+  void operator() (arg_types ...args) noexcept(false) {
+    return impl->call<void>(std::forward<arg_types>(args)...);
   }
  private:
   detail::shared_mock impl;

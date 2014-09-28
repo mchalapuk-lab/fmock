@@ -16,3 +16,10 @@ TEST(throw_exception, when_expected_nullary_call_not_satisfied) {
   }, detail::expect_error);
 }
 
+TEST(throw_exception, on_unexpected_nullary_call) {
+  ASSERT_THROW({
+    function tested_mock;
+    tested_mock();
+  }, detail::expect_error);
+}
+
