@@ -10,7 +10,7 @@ namespace {
 using namespace fmock::detail::types;
 
 #define TEST(types) \
-struct test_of_ ## types { \
+static struct { \
   typedef signature_of<typename types::nullary_type> nullary_sig; \
   typedef signature_of<typename types::unary_type> unary_sig; \
   typedef signature_of<typename types::binary_type> binary_sig; \
@@ -42,7 +42,7 @@ struct test_of_ ## types { \
     "argument types of void(int,int) " #types " function should be (int,int)"); \
   static_assert(std::is_same<std::tuple<>, provider_sig::arg_types>::value, \
     "argument types of int() " #types " function should be ()"); \
-}
+} const types ## test
 
 void free_nullary();
 void free_unary(int);
