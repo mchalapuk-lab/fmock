@@ -4,6 +4,8 @@
 #ifndef FMOCK_DETAIL_TYPES_SIGNATURE_OF_HPP_
 #define FMOCK_DETAIL_TYPES_SIGNATURE_OF_HPP_
 
+#include "fmock/detail/types/remove_class.hpp"
+
 #include <tuple>
 #include <type_traits>
 #include <functional>
@@ -20,31 +22,6 @@ template <class return_t, class ...arg_ts>
 struct signature_helper<return_t(arg_ts...)> {
   typedef return_t return_type;
   typedef std::tuple<arg_ts...> arg_types;
-  using type = return_t(arg_ts...);
-};
-
-template <class type>
-struct remove_class {
-}; // struct remove_class
-
-template <class owner, class return_t, class ...arg_ts>
-struct remove_class<return_t(owner::*)(arg_ts...)> {
-  using type = return_t(arg_ts...);
-};
-template <class owner, class return_t, class ...arg_ts>
-struct remove_class<return_t(owner::*)(arg_ts...)const> {
-  using type = return_t(arg_ts...);
-};
-template <class owner, class return_t, class ...arg_ts>
-struct remove_class<return_t(owner::*)(arg_ts...)volatile> {
-  using type = return_t(arg_ts...);
-};
-template <class owner, class return_t, class ...arg_ts>
-struct remove_class<return_t(owner::*)(arg_ts...)const volatile> {
-  using type = return_t(arg_ts...);
-};
-template <class return_t, class ...arg_ts>
-struct remove_class<return_t(arg_ts...)> {
   using type = return_t(arg_ts...);
 };
 
