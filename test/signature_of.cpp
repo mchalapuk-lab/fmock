@@ -18,8 +18,8 @@ static struct { \
 \
   static_assert(std::is_same<void(), nullary_sig::type>::value, \
     "signature of void() " #types " function should be void()"); \
-  static_assert(std::is_same<void(int), unary_sig::type>::value, \
-    "signature of void(int) " #types " function should be void(int)"); \
+  static_assert(std::is_same<void(int const&), unary_sig::type>::value, \
+    "signature of void(int const&) " #types " function should be void(int const&)"); \
   static_assert(std::is_same<void(int,int), binary_sig::type>::value, \
     "signature of void(int,int) " #types " function should be void(int,int)"); \
   static_assert(std::is_same<int(), provider_sig::type>::value, \
@@ -28,7 +28,7 @@ static struct { \
   static_assert(std::is_same<void, nullary_sig::return_type>::value, \
     "return type of void() " #types " function should be void"); \
   static_assert(std::is_same<void, unary_sig::return_type>::value, \
-    "return type of void(int) " #types " function should be void"); \
+    "return type of void(int const&) " #types " function should be void"); \
   static_assert(std::is_same<void, binary_sig::return_type>::value, \
     "return type of void(int,int) " #types " function should be void"); \
   static_assert(std::is_same<int, provider_sig::return_type>::value, \
@@ -36,8 +36,8 @@ static struct { \
 \
   static_assert(std::is_same<std::tuple<>, nullary_sig::arg_types>::value, \
     "argument types of void() " #types " function should be ()"); \
-  static_assert(std::is_same<std::tuple<int>, unary_sig::arg_types>::value, \
-    "argument types of void(int) " #types " function should be (int)"); \
+  static_assert(std::is_same<std::tuple<int const&>, unary_sig::arg_types>::value, \
+    "argument types of void(int const&) " #types " function should be (int const&)"); \
   static_assert(std::is_same<std::tuple<int,int>, binary_sig::arg_types>::value, \
     "argument types of void(int,int) " #types " function should be (int,int)"); \
   static_assert(std::is_same<std::tuple<>, provider_sig::arg_types>::value, \
@@ -45,7 +45,7 @@ static struct { \
 } const types ## test
 
 void free_nullary();
-void free_unary(int);
+void free_unary(int const&);
 void free_binary(int, int);
 int free_provider();
 
@@ -58,7 +58,7 @@ struct free_function {
 
 struct member {
   void nullary();
-  void unary(int);
+  void unary(int const&);
   void binary(int, int);
   int provider();
 };
@@ -79,7 +79,7 @@ struct member_function_pointer {
 
 struct const_member {
   void nullary() const;
-  void unary(int) const;
+  void unary(int const&) const;
   void binary(int, int) const;
   int provider() const;
 };
@@ -100,7 +100,7 @@ struct const_member_function_pointer {
 
 struct volatile_member {
   void nullary() volatile;
-  void unary(int) volatile;
+  void unary(int const&) volatile;
   void binary(int, int) volatile;
   int provider() volatile;
 };
@@ -121,7 +121,7 @@ struct volatile_member_function_pointer {
 
 struct const_volatile_member {
   void nullary() const volatile;
-  void unary(int) const volatile;
+  void unary(int const&) const volatile;
   void binary(int, int) const volatile;
   int provider() const volatile;
 };
