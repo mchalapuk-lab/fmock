@@ -21,7 +21,7 @@ struct type_info_tuple : type_info_tuple<list_size - 1> {
 template <size_t list_size>
 template <class ...arg_types>
 struct type_info_tuple<list_size>::enlarge_tuple<std::tuple<arg_types...>> {
-  typedef std::tuple<arg_types..., std::type_info *> type;
+  typedef std::tuple<arg_types..., std::type_info const*> type;
 };
 
 template <>

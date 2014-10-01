@@ -55,11 +55,10 @@ struct typed_expectation :
 }; // struct typed_expectation
 
 template <class return_t, class ...arg_ts>
-typed_expectation<return_t, arg_ts...> *make_typed_expectation(
-    typename typed_expectation<return_t, arg_ts...>::matchers_tuple const& m,
-    typename typed_expectation<return_t, arg_ts...>::answer_type const& a
-    ) {
-  return new typed_expectation<return_t, arg_ts...>(m, a);
+typed_expectation<return_t, arg_ts...> *
+make_typed_expectation(std::tuple<matcher<arg_ts>...> const& matchers,
+                       std::function<return_t(arg_ts...)> const& answer) {
+  return new typed_expectation<return_t, arg_ts...>(matchers, answer);
 }
 
 } // namespace detail

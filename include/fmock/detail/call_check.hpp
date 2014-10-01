@@ -20,7 +20,7 @@ struct arg_values_check {
                      std::tuple<arg_ts &...> const& current_args) const {
     auto &arg = std::get<arg_index>(current_args);
     auto &matcher = std::get<arg_index>(exp.matchers);
-    if (!matcher(std::forward<decltype(arg)>(arg))) {
+    if (match_result::FAILURE == matcher(std::forward<decltype(arg)>(arg))) {
       return arg_index;
     }
     return arg_values_check<arg_count, arg_index + 1>()(exp, current_args);

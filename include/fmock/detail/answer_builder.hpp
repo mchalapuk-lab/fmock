@@ -6,7 +6,6 @@
 
 #include "fmock/detail/mock.hpp"
 #include "fmock/detail/expect_error.hpp"
-#include "fmock/detail/matchers/any.hpp"
 #include "fmock/detail/constructor.hpp"
 
 namespace fmock {
@@ -15,21 +14,22 @@ namespace detail {
 template <class return_type, class ...arg_types>
 class answer_builder {
  public:
-  answer_builder(detail::shared_mock mock) :
-    impl(mock),
-    matchers({ detail::matchers::any<arg_types>()... }),
+  answer_builder(detail::shared_mock mock,
+                 detail::matcher<arg_types>... matchers) :
+    mock_impl(mock),
+    arg_matchers(std::make_tuple(matchers...)),
     answer([] (arg_types...) { return detail::constructor<return_type>(); }) {
 
-    assert(impl.get());
+    assert(mock_impl.get());
   }
   ~answer_builder() {
-    auto exp = detail::make_typed_expectation<return_type>(matchers, answer);
-    impl->add_expectation(exp);
+    auto exp = detail::make_typed_expectation(arg_matchers, answer);
+    mock_impl->add_expectation(exp);
   }
  private:
-  detail::shared_mock impl;
+  detail::shared_mock mock_impl;
 
-  std::tuple<detail::matcher<arg_types>...> matchers;
+  std::tuple<detail::matcher<arg_types>...> arg_matchers;
   std::function<return_type(arg_types...)> answer;
 }; // class answer_builder
 
