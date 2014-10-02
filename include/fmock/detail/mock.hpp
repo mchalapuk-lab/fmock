@@ -21,14 +21,7 @@ class mock {
   mock(mock &&) = delete;
 
   ~mock() throw(expect_error) {
-    if (!has_unsatisfied_expectations()) {
-      return;
-    }
-    auto current_error = make_unsatisfied_error();
-    if (!std::uncaught_exception()) {
-      throw current_error;
-    }
-    // error not thrown, can't do much about it (TODO stderr??)
+    verify();
   }
  
   template <class return_t, class ...arg_ts>
@@ -62,24 +55,32 @@ class mock {
     return typed_exp->answer_function(std::forward<arg_ts>(args)...);
   }
 
+  void verify() const throw(expect_error) {
+    if (!has_unsatisfied_expectations()) {
+      return;
+    }
+    auto current_error = make_unsatisfied_error();
+    if (!std::uncaught_exception()) {
+      throw current_error;
+    }
+    // error not thrown, can't do much about it (TODO stderr??)
+  }
+
   void add_expectation(expectation *exp) {
     expectations.emplace_back(exp);
-  }
-  bool has_unsatisfied_expectations() const noexcept(true) {
-    return (expectations.size() != 0);
   }
  private:
   std::deque<std::unique_ptr<expectation>> expectations;
 
-  expect_error make_unsatisfied_error() {
+  expect_error make_unsatisfied_error() const {
     return expect_error("unsatisfied expectations");
   }
   template <class return_t, class ...arg_ts>
-  expect_error make_unexpected_call_error() {
+  expect_error make_unexpected_call_error() const {
     return expect_error("unexpected call");
   }
   template <class return_t, class ...arg_ts>
-  expect_error make_unexpected_call_error(expectation const& exp) {
+  expect_error make_unexpected_call_error(expectation const& exp) const {
     return expect_error("unexpected call");
   }
   template <class return_t, class ...arg_ts>
@@ -87,8 +88,12 @@ class mock {
       typed_expectation<return_t, arg_ts...> const& exp,
       std::tuple<arg_ts &...> const& current_args,
       size_t arg_index
-      ) {
+      ) const {
     return expect_error("argument not matching expectations");
+  }
+
+  bool has_unsatisfied_expectations() const noexcept(true) {
+    return (expectations.size() != 0);
   }
 }; // class mock
 

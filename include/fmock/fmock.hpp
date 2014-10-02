@@ -30,6 +30,9 @@ class function {
   expect_call(arg_ts ...args) {
     return decltype(expect_call(args...))(impl, detail::make_matcher(args)...);
   }
+  void verify() const {
+    impl->verify();
+  }
 
   template <class ...arg_ts>
   return_t operator() (arg_ts ...args) noexcept(false) {

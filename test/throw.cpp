@@ -5,6 +5,7 @@
 #include "fmock/matchers/any.hpp"
 
 #include <exception>
+#include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -12,47 +13,66 @@
 using namespace fmock;
 
 TEST(throw_exception, when_expected_nullary_call_not_satisfied) {
-  ASSERT_THROW({
-    function<> tested_mock;
-    tested_mock.expect_call();
-  }, expect_error);
+  function<> tested_mock;
+  tested_mock.expect_call();
+  try {
+    tested_mock.verify();
+  } catch (expect_error const& e) {
+    ASSERT_EQ("unsatisfied expectations:\n"
+        "  void()", e.what());
+  }
 }
 
 TEST(throw_exception, on_unexpected_nullary_call) {
-  ASSERT_THROW({
-    function<> tested_mock;
+  function<> tested_mock;
+  try {
     tested_mock();
-  }, expect_error);
+  } catch (expect_error const& e) {
+    ASSERT_EQ("unexpected call to void();\n"
+        "  expected no call", e.what());
+  }
 }
 
 TEST(throw_exception, on_unexpected_int_call) {
-  ASSERT_THROW({
-    function<int> tested_mock;
+  function<int> tested_mock;
+  try {
     auto value = tested_mock();
-  }, expect_error);
+  } catch (expect_error const& e) {
+    ASSERT_EQ("unexpected call to int();\n"
+        "  expected no call", e.what());
+  }
 }
 
 TEST(throw_exception, on_call_with_lesser_arg_count) {
-  ASSERT_THROW({
-    function<> tested_mock;
-    tested_mock.expect_call(0);
+  function<> tested_mock;
+  tested_mock.expect_call(0);
+  try {
     tested_mock();
-  }, expect_error);
+  } catch (expect_error const& e) {
+    ASSERT_EQ("unexpected call to void();\n"
+        "  expected void(int)", e.what());
+  }
 }
 
 TEST(throw_exception, on_call_with_greater_arg_count) {
-  ASSERT_THROW({
-    function<> tested_mock;
-    tested_mock.expect_call();
+  function<> tested_mock;
+  tested_mock.expect_call();
+  try {
     tested_mock(0);
-  }, expect_error);
+  } catch (expect_error const& e) {
+    ASSERT_EQ("unexpected call to void(int);\n"
+        "  expected void()", e.what());
+  }
 }
 
 TEST(throw_exception, on_call_with_arg_of_wrong_type) {
-  ASSERT_THROW({
-    function<> tested_mock;
-    tested_mock.expect_call(matchers::any<int>());
+  function<> tested_mock;
+  tested_mock.expect_call(matchers::any<int>());
+  try {
     tested_mock(0.0);
-  }, expect_error);
+  } catch (expect_error const& e) {
+    ASSERT_EQ("unexpected call to void(double);\n"
+        "  expected void({ match any int })", e.what());
+  }
 }
 
