@@ -1,14 +1,13 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_EXPECT_ERROR_HPP_
-#define FMOCK_DETAIL_EXPECT_ERROR_HPP_
+#ifndef FMOCK_EXPECT_ERROR_HPP_
+#define FMOCK_EXPECT_ERROR_HPP_
 
 #include <exception>
 #include <forward_list>
 
 namespace fmock {
-namespace detail {
 
 class expect_error : std::runtime_error {
  public:
@@ -29,7 +28,6 @@ class expect_error : std::runtime_error {
   std::forward_list<expect_error> next_errors;
 }; // class expect_error
 
-} // namespace detail
 } // namespace fmock
 
 #endif // include guard

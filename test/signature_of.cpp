@@ -1,13 +1,13 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#include "fmock/detail/types/signature_of.hpp"
+#include "fmock/types/signature_of.hpp"
 
 #include <type_traits>
 
 namespace {
 
-using namespace fmock::detail::types;
+using namespace fmock::types;
 
 #define TEST(types) \
 static struct { \

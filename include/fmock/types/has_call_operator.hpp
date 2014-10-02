@@ -1,11 +1,10 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_TYPES_HAS_CALL_OPERATOR_HPP_
-#define FMOCK_DETAIL_TYPES_HAS_CALL_OPERATOR_HPP_
+#ifndef FMOCK_TYPES_HAS_CALL_OPERATOR_HPP_
+#define FMOCK_TYPES_HAS_CALL_OPERATOR_HPP_
 
 namespace fmock {
-namespace detail {
 namespace types {
 
 template <class type>
@@ -26,7 +25,6 @@ struct has_call_operator {
 }; // struct has_call_operator
 
 } // namespace types
-} // namespace detail
 } // namespace fmock
 
 #endif // include guard

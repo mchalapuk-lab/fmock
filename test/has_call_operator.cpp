@@ -1,11 +1,11 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#include "fmock/detail/types/has_call_operator.hpp"
+#include "fmock/types/has_call_operator.hpp"
 
 #include <functional>
 
-using namespace fmock::detail::types;
+using namespace fmock::types;
 
 namespace {
 

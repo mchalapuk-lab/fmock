@@ -5,7 +5,7 @@
 #define FMOCK_DETAIL_CALL_CHECK_HPP_
 
 #include "fmock/detail/expectation.hpp"
-#include "fmock/detail/count_args.hpp"
+#include "fmock/types/count_types.hpp"
 
 #include <tuple>
 #include <cassert>
@@ -38,7 +38,7 @@ struct arg_values_check<arg_count, arg_count> {
 
 template <class return_t, class ...arg_ts>
 struct call_check {
-  static const size_t current_arg_count = count_args<arg_ts...>::value;
+  static const size_t current_arg_count = types::count_types<arg_ts...>::value;
   typedef expected_arguments<current_arg_count> expected_args_type;
 
   bool return_type(expectation const &exp) const {

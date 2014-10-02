@@ -4,10 +4,10 @@
 #ifndef FMOCK_DETAIL_EXPECTATION_HPP_
 #define FMOCK_DETAIL_EXPECTATION_HPP_
 
-#include "fmock/detail/type_info_tuple.hpp"
-#include "fmock/detail/count_args.hpp"
-#include "fmock/detail/matcher.hpp"
 #include "fmock/detail/answer.hpp"
+#include "fmock/types/type_info_tuple.hpp"
+#include "fmock/types/count_types.hpp"
+#include "fmock/matcher.hpp"
 
 namespace fmock {
 namespace detail {
@@ -21,7 +21,8 @@ struct expectation {
 
 template <size_t arg_count_static>
 struct expected_arguments : public expectation {
-  typedef typename type_info_tuple<arg_count_static>::type args_tuple_type;
+  typedef typename types::type_info_tuple<arg_count_static>::type
+    args_tuple_type;
   args_tuple_type arg_type_infos;
 
   expected_arguments(std::type_info const* return_type,
@@ -37,9 +38,9 @@ struct expected_arguments : public expectation {
 
 template <class return_t, class ...arg_ts>
 struct typed_expectation :
-  public expected_arguments<count_args<arg_ts...>::value> {
+  public expected_arguments<types::count_types<arg_ts...>::value> {
 
-  static size_t const arg_count_static = count_args<arg_ts...>::value;
+  static size_t const arg_count_static = types::count_types<arg_ts...>::value;
 
   typedef expected_arguments<arg_count_static> expected_args_type;
   typedef std::tuple<matcher<arg_ts>...> matchers_tuple;

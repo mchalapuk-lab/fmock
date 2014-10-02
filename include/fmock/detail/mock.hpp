@@ -6,9 +6,8 @@
 
 #include "fmock/detail/expectation.hpp"
 #include "fmock/detail/call_check.hpp"
-#include "fmock/detail/expect_error.hpp"
+#include "fmock/expect_error.hpp"
 
-#include <exception>
 #include <deque>
 #include <cassert>
 
@@ -21,7 +20,7 @@ class mock {
   mock(mock const&) = delete;
   mock(mock &&) = delete;
 
-  ~mock() throw(detail::expect_error) {
+  ~mock() throw(expect_error) {
     if (!has_unsatisfied_expectations()) {
       return;
     }

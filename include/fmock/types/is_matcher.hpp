@@ -1,19 +1,17 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_TYPES_IS_MATCHER_HPP_
-#define FMOCK_DETAIL_TYPES_IS_MATCHER_HPP_
+#ifndef FMOCK_TYPES_IS_MATCHER_HPP_
+#define FMOCK_TYPES_IS_MATCHER_HPP_
 
-#include "fmock/detail/matcher.hpp"
-#include "fmock/detail/types/has_call_operator.hpp"
-#include "fmock/detail/types/signature_of.hpp"
-#include "fmock/detail/types/is_function_or_method.hpp"
-#include "fmock/detail/types/at.hpp"
+#include "fmock/matcher.hpp"
+#include "fmock/types/has_call_operator.hpp"
+#include "fmock/types/signature_of.hpp"
+#include "fmock/types/is_function_or_method.hpp"
 
 #include <type_traits>
 
 namespace fmock {
-namespace detail {
 namespace types {
 
 template <class arg_t, bool is_functional = false>
@@ -53,11 +51,8 @@ struct assert_is_matcher :
   > {
 }; // struct assert_is_matcher
 
-
 } // namespace types
-} // namespace detail
 } // namespace fmock
 
 #endif // include guard
-
 

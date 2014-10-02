@@ -4,8 +4,9 @@
 #ifndef FMOCK_DETAIL_ANSWER_BUILDER_HPP_
 #define FMOCK_DETAIL_ANSWER_BUILDER_HPP_
 
+#include "fmock/matcher.hpp"
+#include "fmock/expect_error.hpp"
 #include "fmock/detail/mock.hpp"
-#include "fmock/detail/expect_error.hpp"
 #include "fmock/detail/constructor.hpp"
 #include "fmock/detail/answer.hpp"
 
@@ -16,7 +17,7 @@ template <class return_type, class ...arg_types>
 class answer_builder {
  public:
   answer_builder(detail::shared_mock mock,
-                 detail::matcher<arg_types>... matchers) :
+                 matcher<arg_types>... matchers) :
     mock_impl(mock),
     arg_matchers(std::make_tuple(matchers...)),
     answer_function(

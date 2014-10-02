@@ -4,10 +4,10 @@
 #ifndef FMOCK_DETAIL_MAKE_MATCHER_HPP_
 #define FMOCK_DETAIL_MAKE_MATCHER_HPP_
 
-#include "fmock/detail/matcher.hpp"
-#include "fmock/detail/types/is_matcher.hpp"
-#include "fmock/detail/types/arg_of.hpp"
-#include "fmock/detail/matchers/equals.hpp"
+#include "fmock/matcher.hpp"
+#include "fmock/types/is_matcher.hpp"
+#include "fmock/types/arg_of.hpp"
+#include "fmock/matchers/equals.hpp"
 
 #include <type_traits>
 

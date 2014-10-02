@@ -1,13 +1,13 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_TYPE_INFO_TUPLE_HPP_
-#define FMOCK_DETAIL_TYPE_INFO_TUPLE_HPP_
+#ifndef FMOCK_TYPES_TYPE_INFO_TUPLE_HPP_
+#define FMOCK_TYPES_TYPE_INFO_TUPLE_HPP_
 
 #include <tuple>
 
 namespace fmock {
-namespace detail {
+namespace types {
 
 template <size_t list_size>
 struct type_info_tuple : type_info_tuple<list_size - 1> {
@@ -29,7 +29,7 @@ struct type_info_tuple<0> {
   typedef std::tuple<> type;
 };
 
-} // namespace detail
+} // namespace types
 } // namespace fmock
 
 #endif // include guard

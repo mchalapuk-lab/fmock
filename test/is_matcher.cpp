@@ -1,12 +1,12 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#include "fmock/detail/types/is_matcher.hpp"
-#include "fmock/detail/matchers/any.hpp"
-#include "fmock/detail/matchers/equals.hpp"
+#include "fmock/types/is_matcher.hpp"
+#include "fmock/matchers/any.hpp"
+#include "fmock/matchers/equals.hpp"
 
-using namespace fmock::detail::types;
-using namespace fmock::detail::matchers;
+using namespace fmock::types;
+using namespace fmock::matchers;
 
 namespace {
 

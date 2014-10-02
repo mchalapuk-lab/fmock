@@ -2,11 +2,12 @@
 // author: Maciej Chałapuk
 
 #include "fmock/detail/make_matcher.hpp"
-#include "fmock/detail/matchers/any.hpp"
-#include "fmock/detail/matchers/equals.hpp"
+#include "fmock/matchers/any.hpp"
+#include "fmock/matchers/equals.hpp"
 
+using namespace fmock;
 using namespace fmock::detail;
-using namespace fmock::detail::matchers;
+using namespace fmock::matchers;
 
 namespace {
 

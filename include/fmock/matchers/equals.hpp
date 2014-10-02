@@ -1,16 +1,15 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_MATCHERS_EQUALS_HPP_
-#define FMOCK_DETAIL_MATCHERS_EQUALS_HPP_
+#ifndef FMOCK_MATCHERS_EQUALS_HPP_
+#define FMOCK_MATCHERS_EQUALS_HPP_
 
-#include "fmock/detail/matcher.hpp"
-#include "fmock/detail/types/is_matcher.hpp"
+#include "fmock/matcher.hpp"
+#include "fmock/types/is_matcher.hpp"
 
 #include <type_traits>
 
 namespace fmock {
-namespace detail {
 namespace matchers {
 
 template <class arg_t>
@@ -31,7 +30,6 @@ namespace {
 }
 
 } // namespace matchers
-} // namespace detail
 } // namespace fmock
 
 #endif // include guard

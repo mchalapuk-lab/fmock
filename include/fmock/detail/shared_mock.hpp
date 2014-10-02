@@ -5,7 +5,7 @@
 #define FMOCK_DETAIL_SHARED_MOCK_HPP_
 
 #include "fmock/detail/mock.hpp"
-#include "fmock/detail/expect_error.hpp"
+#include "fmock/expect_error.hpp"
 
 namespace fmock {
 namespace detail {

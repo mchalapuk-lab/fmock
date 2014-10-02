@@ -7,7 +7,7 @@
 #include "fmock/detail/shared_mock.hpp"
 #include "fmock/detail/answer_builder.hpp"
 #include "fmock/detail/make_matcher.hpp"
-#include "fmock/detail/types/arg_of.hpp"
+#include "fmock/types/arg_of.hpp"
 
 namespace fmock {
 
@@ -18,12 +18,12 @@ class function {
   using matcher_of = decltype(detail::make_matcher(std::declval<arg_t>()));
 
   template <class arg_t>
-  using ensure_arg_type = detail::types::arg_of<matcher_of<arg_t>>;
+  using ensure_arg_type = types::arg_of<matcher_of<arg_t>>;
 
   function() = default;
   function(function const& rhs) = default;
   function(function&& rhs) : impl(std::move(rhs.impl)) {}
-  ~function() throw(detail::expect_error) {}
+  ~function() throw(expect_error) {}
 
   template <class ...arg_ts>
   detail::answer_builder<return_t, typename ensure_arg_type<arg_ts>::type...>

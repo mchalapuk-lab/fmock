@@ -1,14 +1,13 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_MATCHERS_ANY_HPP_
-#define FMOCK_DETAIL_MATCHERS_ANY_HPP_
+#ifndef FMOCK_MATCHERS_ANY_HPP_
+#define FMOCK_MATCHERS_ANY_HPP_
 
-#include "fmock/detail/matcher.hpp"
-#include "fmock/detail/types/is_matcher.hpp"
+#include "fmock/matcher.hpp"
+#include "fmock/types/is_matcher.hpp"
 
 namespace fmock {
-namespace detail {
 namespace matchers {
 
 template <class arg_type>
@@ -19,13 +18,11 @@ struct any {
 }; // struct any
 
 namespace {
-  auto test = types::assert_is_matcher<any<int>>();
+  types::assert_is_matcher<any<int>> any_is_matcher;
 }
 
 } // namespace matchers
-} // namespace detail
 } // namespace fmock
 
 #endif // include guard
-
 

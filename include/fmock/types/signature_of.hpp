@@ -1,18 +1,16 @@
 // licence: GPLv3
 // author: Maciej Chałapuk
 
-#ifndef FMOCK_DETAIL_TYPES_SIGNATURE_OF_HPP_
-#define FMOCK_DETAIL_TYPES_SIGNATURE_OF_HPP_
+#ifndef FMOCK_TYPES_SIGNATURE_OF_HPP_
+#define FMOCK_TYPES_SIGNATURE_OF_HPP_
 
-#include "fmock/detail/types/remove_class.hpp"
-#include "fmock/detail/types/has_call_operator.hpp"
+#include "fmock/types/remove_class.hpp"
+#include "fmock/types/has_call_operator.hpp"
 
 #include <tuple>
 #include <type_traits>
-#include <functional>
 
 namespace fmock {
-namespace detail {
 namespace types {
 
 template <class func_t>
@@ -53,7 +51,6 @@ struct signature_helper<return_t(arg_ts...)> {
 };
 
 } // namespace types
-} // namespace detail
 } // namespace fmock
 
 #endif // include guard
