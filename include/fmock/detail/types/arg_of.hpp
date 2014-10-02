@@ -7,6 +7,7 @@
 #include "fmock/detail/matcher.hpp"
 #include "fmock/detail/types/signature_of.hpp"
 #include "fmock/detail/types/at.hpp"
+#include "fmock/detail/types/is_matcher.hpp"
 
 #include <type_traits>
 
@@ -15,7 +16,7 @@ namespace detail {
 namespace types {
 
 template <class matcher_t>
-struct arg_of {
+struct arg_of : assert_is_matcher<matcher_t> {
  private:
   typedef decltype(&matcher_t::operator()) operator_type;
   typedef typename signature_of<operator_type>::arg_types arg_types;
