@@ -7,6 +7,7 @@
 #include "fmock/detail/type_info_tuple.hpp"
 #include "fmock/detail/count_args.hpp"
 #include "fmock/detail/matcher.hpp"
+#include "fmock/detail/answer.hpp"
 
 namespace fmock {
 namespace detail {
@@ -42,22 +43,22 @@ struct typed_expectation :
 
   typedef expected_arguments<arg_count_static> expected_args_type;
   typedef std::tuple<matcher<arg_ts>...> matchers_tuple;
-  typedef std::function<return_t(arg_ts...)> answer_type;
+  typedef answer<return_t(arg_ts...)> answer_type;
 
   matchers_tuple matchers;
-  answer_type answer;
+  answer_type answer_function;
 
   typed_expectation(matchers_tuple const& m, answer_type const& a) :
     expected_args_type(&typeid(return_t), std::make_tuple(&typeid(arg_ts)...)),
     matchers(m),
-    answer(a) {
+    answer_function(a) {
   }
 }; // struct typed_expectation
 
 template <class return_t, class ...arg_ts>
 typed_expectation<return_t, arg_ts...> *
 make_typed_expectation(std::tuple<matcher<arg_ts>...> const& matchers,
-                       std::function<return_t(arg_ts...)> const& answer) {
+                       answer<return_t(arg_ts...)> const& answer) {
   return new typed_expectation<return_t, arg_ts...>(matchers, answer);
 }
 

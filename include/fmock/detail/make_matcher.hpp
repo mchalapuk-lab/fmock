@@ -6,6 +6,7 @@
 
 #include "fmock/detail/matcher.hpp"
 #include "fmock/detail/types/is_matcher.hpp"
+#include "fmock/detail/types/arg_of.hpp"
 #include "fmock/detail/matchers/equals.hpp"
 
 #include <type_traits>
@@ -13,15 +14,14 @@
 namespace fmock {
 namespace detail {
 
-template <class arg_t>
-using ensure_matcher = std::enable_if<types::is_matcher<arg_t>::value, arg_t>;
-
-template <class arg_t>
-arg_t make_matcher(typename ensure_matcher<arg_t>::type const& matcher) {
-  return matcher;
+template <class matcher_t, typename std::enable_if<
+  types::is_matcher<matcher_t>::value>::type * = nullptr>
+matcher<typename types::arg_of<matcher_t>::type> make_matcher(matcher_t m) {
+  return m;
 }
 
-template <class arg_t>
+template <class arg_t, typename std::enable_if<
+  !types::is_matcher<arg_t>::value>::type * = nullptr>
 matcher<arg_t> make_matcher(arg_t value) {
   return matchers::equals<typename std::remove_reference<arg_t>::type>(value);
 }

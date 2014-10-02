@@ -60,7 +60,7 @@ class mock {
       throw make_argument_mismatch_error(*typed_exp, args_tuple, error_index);
     }
     expectations.pop_front();
-    return typed_exp->answer(std::forward<arg_ts>(args)...);
+    return typed_exp->answer_function(std::forward<arg_ts>(args)...);
   }
 
   void add_expectation(expectation *exp) {

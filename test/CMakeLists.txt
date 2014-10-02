@@ -13,5 +13,6 @@ add_executable (${PROJECT_NAME}-static-tests
   signature_of.cpp
   is_matcher.cpp
   arg_of.cpp
+  make_matcher_static.cpp
 )
 

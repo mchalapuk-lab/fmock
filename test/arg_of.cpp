@@ -16,10 +16,10 @@ struct AssertEquals { \
       "matcher argument type error");
 };
 
-AssertEquals<int const&, typename arg_of<any<int>>::type> test0;
-AssertEquals<char const&, typename arg_of<any<char>>::type> test1;
-AssertEquals<long const&, typename arg_of<equals<long>>::type> test2;
-AssertEquals<short const&, typename arg_of<equals<short>>::type> test3;
+AssertEquals<int, typename arg_of<any<int>>::type> test0;
+AssertEquals<char, typename arg_of<any<char>>::type> test1;
+AssertEquals<long, typename arg_of<equals<long>>::type> test2;
+AssertEquals<short, typename arg_of<equals<short>>::type> test3;
 
 } // namespace
 

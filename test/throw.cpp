@@ -48,3 +48,11 @@ TEST(throw_exception, on_call_with_greater_arg_count) {
   }, detail::expect_error);
 }
 
+TEST(throw_exception, on_call_with_arg_of_wrong_type) {
+  ASSERT_THROW({
+    function<> tested_mock;
+    tested_mock.expect_call(detail::matchers::any<int>());
+    tested_mock(0.0);
+  }, detail::expect_error);
+}
+

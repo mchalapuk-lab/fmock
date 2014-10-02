@@ -140,6 +140,13 @@ struct const_volatile_member_function_pointer {
   typedef const_volatile_member_function::provider_type* provider_type;
 };
 
+struct functor {
+  struct nullary_type { void operator() (); };
+  struct unary_type { void operator() (int const&); };
+  struct binary_type { void operator() (int, int); };
+  struct provider_type { int operator() (); };
+};
+
 TEST(free_function);
 TEST(member_function);
 TEST(member_function_pointer);
@@ -149,6 +156,7 @@ TEST(volatile_member_function);
 TEST(volatile_member_function_pointer);
 TEST(const_volatile_member_function);
 TEST(const_volatile_member_function_pointer);
+TEST(functor);
 
 } // namespace
 

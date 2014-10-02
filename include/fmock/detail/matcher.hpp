@@ -15,7 +15,7 @@ enum class match_result {
 }; // enum class match_result
 
 template <class arg_type>
-using matcher = std::function<match_result (arg_type)>;
+using matcher = std::function<match_result (arg_type const&)>;
 
 } // namespace detail
 } // namespace fmock
