@@ -31,6 +31,9 @@ class shared_mock {
   mock* get() const noexcept(true) {
     return &ptr->impl;
   }
+  operator bool() noexcept(true) {
+    return ptr;
+  }
  private:
   struct pointer {
     size_t count = 1;

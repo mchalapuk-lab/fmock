@@ -5,21 +5,25 @@
 #define FMOCK_MATCHERS_ANY_HPP_
 
 #include "fmock/matcher.hpp"
+#include "fmock/to_str.hpp"
 #include "fmock/types/is_matcher.hpp"
+
+#include <sstream>
 
 namespace fmock {
 namespace matchers {
 
-template <class arg_type>
-struct any {
-  match_result operator() (arg_type const&) const noexcept(true) {
+template <class arg_t>
+struct any : public matcher<arg_t> {
+  match_result operator() (arg_t const&) const {
     return match_result::SUCCESS;
   }
+  std::string to_str() const {
+    std::stringstream stringbuilder;
+    stringbuilder << "{ any " << fmock::to_str(typeid(arg_t)) << " }";
+    return stringbuilder.str();
+  }
 }; // struct any
-
-namespace {
-  types::assert_is_matcher<any<int>> any_is_matcher;
-}
 
 } // namespace matchers
 } // namespace fmock

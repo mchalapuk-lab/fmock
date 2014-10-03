@@ -13,8 +13,11 @@ enum class match_result {
   FAILURE = 0,
 }; // enum class match_result
 
-template <class arg_type>
-using matcher = std::function<match_result(arg_type const&)>;
+template <class arg_t>
+struct matcher {
+  virtual match_result operator() (arg_t const&) const = 0;
+  virtual std::string to_str() const = 0;
+}; // struct matcher 
 
 } // namespace fmock
 

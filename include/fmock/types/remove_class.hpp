@@ -7,8 +7,9 @@
 namespace fmock {
 namespace types {
 
-template <class type>
+template <class no_class_to_remove>
 struct remove_class {
+  typedef no_class_to_remove type;
 }; // struct remove_class
 
 template <class owner, class return_t, class ...arg_ts>

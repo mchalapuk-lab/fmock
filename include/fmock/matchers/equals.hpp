@@ -5,29 +5,26 @@
 #define FMOCK_MATCHERS_EQUALS_HPP_
 
 #include "fmock/matcher.hpp"
+#include "fmock/to_str.hpp"
 #include "fmock/types/is_matcher.hpp"
-
-#include <type_traits>
 
 namespace fmock {
 namespace matchers {
 
 template <class arg_t>
-class equals {
+class equals : public matcher<arg_t> {
  public:
   equals(arg_t const& val) : value(val) {}
 
-  match_result operator() (arg_t const& arg) const
-  noexcept(noexcept(arg == arg)) {
+  match_result operator() (arg_t const& arg) const {
     return (value == arg)? match_result::SUCCESS: match_result::FAILURE;
+  }
+  std::string to_str() const {
+    return fmock::to_str(value);
   }
  private:
   arg_t const& value;
 }; // class equals
-
-namespace {
-  types::assert_is_matcher<equals<int>> equals_matcher_test;
-}
 
 } // namespace matchers
 } // namespace fmock

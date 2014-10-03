@@ -9,6 +9,7 @@
 #include "fmock/expect_error.hpp"
 
 #include <deque>
+#include <sstream>
 #include <cassert>
 
 namespace fmock {
@@ -55,12 +56,13 @@ class mock {
     return typed_exp->answer_function(std::forward<arg_ts>(args)...);
   }
 
-  void verify() const throw(expect_error) {
+  void verify() throw(expect_error) {
     if (!has_unsatisfied_expectations()) {
       return;
     }
     auto current_error = make_unsatisfied_error();
     if (!std::uncaught_exception()) {
+      expectations.clear();
       throw current_error;
     }
     // error not thrown, can't do much about it (TODO stderr??)
@@ -73,7 +75,12 @@ class mock {
   std::deque<std::unique_ptr<expectation>> expectations;
 
   expect_error make_unsatisfied_error() const {
-    return expect_error("unsatisfied expectations");
+    std::stringstream message_builder;
+    message_builder << "unsatisfied expectations:" << std::endl;
+    for (auto const& expect : expectations) {
+      message_builder << "  " << expect->to_str() << std::endl;
+    }
+    return expect_error(message_builder.str());
   }
   template <class return_t, class ...arg_ts>
   expect_error make_unexpected_call_error() const {

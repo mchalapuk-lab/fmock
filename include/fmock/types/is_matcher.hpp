@@ -5,50 +5,26 @@
 #define FMOCK_TYPES_IS_MATCHER_HPP_
 
 #include "fmock/matcher.hpp"
-#include "fmock/types/has_call_operator.hpp"
-#include "fmock/types/signature_of.hpp"
-#include "fmock/types/is_function_or_method.hpp"
-
-#include <type_traits>
 
 namespace fmock {
 namespace types {
 
-template <class arg_t, bool is_functional = false>
-struct is_matcher_helper : public std::false_type {
-}; // struct is_matcher_helper
-
-template <class arg_t>
+template <class maybe_matcher_t>
 struct is_matcher {
-  static bool const value = is_matcher_helper<arg_t,
-    is_function_or_method<arg_t>::value || has_call_operator<arg_t>::value
-    >::value;
+ private:
+  typedef char yes[1];
+  typedef char no[2];
+
+  template <class arg_t> static yes& test(matcher<arg_t> const*);
+  static no& test(void const*);
+ public:
+  static bool const value =
+    sizeof(test(static_cast<maybe_matcher_t const*>(nullptr))) == sizeof(yes);
 }; // struct is_matcher
 
-template <class signature_t>
-struct is_matcher_signature : public std::false_type {
-}; // struct is_matcher_signature
-
-template <class function_t>
-struct is_matcher_helper<function_t, true> :
-    public is_matcher_signature<typename signature_of<function_t>::type> {
-};
-
-template <class arg_t>
-struct is_matcher_signature<match_result(arg_t const&)> :
-    public std::true_type {
-};
-
-template <class signature_t>
-struct assert_signature_is_matcher {
-  static_assert(is_matcher_signature<signature_t>::value,
-      "signature_t is not a matcher");
-}; // struct assert_signature_is_matcher
-
-template <class functional_t>
-struct assert_is_matcher :
-  public assert_signature_is_matcher<typename signature_of<functional_t>::type
-  > {
+template <class matcher_t>
+struct assert_is_matcher {
+  static_assert(is_matcher<matcher_t>::value, "matcher_t is not a matcher");
 }; // struct assert_is_matcher
 
 } // namespace types

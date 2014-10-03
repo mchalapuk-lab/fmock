@@ -2,6 +2,7 @@
 // author: Maciej Chałapuk
 
 #include "fmock/detail/make_matcher.hpp"
+#include "fmock/matchers/anonymous.hpp"
 #include "fmock/matchers/any.hpp"
 #include "fmock/matchers/equals.hpp"
 
@@ -17,13 +18,21 @@ struct AssertEquals {
       "matcher argument type error");
 };
 
-AssertEquals<matcher<int>, decltype(make_matcher(std::declval<any<int>>()))> test0;
-AssertEquals<matcher<char>, decltype(make_matcher(std::declval<any<char>>()))> test1;
-AssertEquals<matcher<int>, decltype(make_matcher(std::declval<equals<int>>()))> test2;
-AssertEquals<matcher<char>, decltype(make_matcher(std::declval<equals<char>>()))> test3;
+AssertEquals<any<int> *, decltype(make_matcher(std::declval<any<int>>()))> test0;
+AssertEquals<any<char> *, decltype(make_matcher(std::declval<any<char>>()))> test1;
+AssertEquals<equals<int> *, decltype(make_matcher(std::declval<equals<int>>()))> test2;
+AssertEquals<equals<char> *, decltype(make_matcher(std::declval<equals<char>>()))> test3;
 
-AssertEquals<matcher<int>, decltype(make_matcher(std::declval<int>()))> test4;
-AssertEquals<matcher<char>, decltype(make_matcher(std::declval<char>()))> test5;
+AssertEquals<equals<int> *, decltype(make_matcher(std::declval<int>()))> test4;
+AssertEquals<equals<char> *, decltype(make_matcher(std::declval<char>()))> test5;
+
+match_result function(int const&);
+AssertEquals<anonymous<int> *, decltype(make_matcher(&function))> test6;
+
+struct functor {
+  match_result operator() (char const&) const;
+};
+AssertEquals<anonymous<char> *, decltype(make_matcher(std::declval<functor>()))> test7;
 
 } // namespace
 

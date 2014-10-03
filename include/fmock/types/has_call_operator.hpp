@@ -17,8 +17,8 @@ struct has_call_operator {
   template <class W>
   using SFINAE = type_check<decltype(&W::operator()), &W::operator()> *;
 
-  template <typename X> static yes& test(SFINAE<X>);
-  template <typename> static no& test(...);
+  template <class X> static yes& test(SFINAE<X>);
+  template <class> static no& test(...);
 
  public:
   static bool const value = sizeof(test<type>(0)) == sizeof(yes);

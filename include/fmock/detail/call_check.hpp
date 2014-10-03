@@ -19,7 +19,7 @@ struct arg_values_check {
   size_t operator() (typed_expectation<return_t, arg_ts...> const& exp,
                      std::tuple<arg_ts &...> const& current_args) const {
     auto &arg = std::get<arg_index>(current_args);
-    auto &matcher = std::get<arg_index>(exp.matchers);
+    auto &matcher = *std::get<arg_index>(exp.matchers);
     if (match_result::FAILURE == matcher(std::forward<decltype(arg)>(arg))) {
       return arg_index;
     }
