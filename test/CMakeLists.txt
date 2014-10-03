@@ -12,6 +12,7 @@ add_executable (${PROJECT_NAME}-static-tests
   has_call_operator.cpp
   signature_of.cpp
   is_matcher.cpp
+  is_matcher_function.cpp
   arg_of.cpp
   make_matcher_static.cpp
 )
